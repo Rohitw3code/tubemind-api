@@ -1,1 +1,1 @@
-# tubemind-api
+# tubemind.ai-api
