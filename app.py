@@ -74,6 +74,54 @@ def get_transcript():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/generate-script', methods=['POST'])
+def generate_script():
+    try:
+        data = request.get_json()
+        title = data.get('title')
+        duration = data.get('duration')  # 'short', 'medium', 'long'
+        custom_instructions = data.get('customInstructions', '')
+
+        if not title or not duration:
+            return jsonify({'error': 'Title and duration are required'}), 400
+
+        # Map duration to actual time ranges
+        duration_ranges = {
+            'short': '1-3 minutes',
+            'medium': '5-10 minutes',
+            'long': '15-30 minutes'
+        }
+
+        # Create prompt for the AI
+        prompt = f"""Generate a detailed video script for YouTube with the following specifications:
+
+Title: {title}
+Target Duration: {duration_ranges.get(duration, '5-10 minutes')}
+
+{f'Additional Instructions: {custom_instructions}' if custom_instructions else ''}
+
+Please provide a complete script including:
+1. Introduction/Hook
+2. Main Content Sections
+3. Call to Action
+4. Timestamps for each section
+5. Approximate duration for each section
+6. Key points to emphasize
+7. Suggested B-roll/visual cues
+
+Format the response as a structured script with clear sections and timing."""
+
+        # Generate script using Groq
+        generated_script = groq_client.generate_script(prompt)
+
+        return jsonify({
+            'success': True,
+            'script': generated_script
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/test')
 def test():
     return jsonify({"return":"working"})
