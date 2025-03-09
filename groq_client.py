@@ -68,3 +68,31 @@ Provide a structured analysis following the format specified."""
                 return "Failed to generate script."
         except Exception as e:
             return "Error: " + str(e)
+
+    def generate_hashtags(self, prompt: str) -> str:
+        system_prompt = """You are an expert YouTube hashtag generator. Generate relevant, trending, and engaging hashtags that:
+1. Maximize video visibility
+2. Target the right audience
+3. Follow platform best practices
+4. Include a mix of popular and niche tags
+5. Stay relevant to the content
+"""
+
+        try:
+            response = self.client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt}
+                ],
+                model=self.model,
+                temperature=0.7,
+                max_tokens=1024,
+                top_p=1
+            )
+            
+            if response.choices and response.choices[0].message:
+                return response.choices[0].message.content
+            else:
+                return "Failed to generate hashtags."
+        except Exception as e:
+            return "Error: " + str(e)

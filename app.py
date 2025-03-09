@@ -122,6 +122,52 @@ Format the response as a structured script with clear sections and timing."""
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/generate-hashtags', methods=['POST'])
+def generate_hashtags():
+    try:
+        data = request.get_json()
+        content = data.get('content')
+        
+        if not content:
+            return jsonify({'error': 'No content provided'}), 400
+
+        # Create prompt for hashtag generation
+        prompt = f"""Generate relevant, trending, and engaging hashtags for the following video content. 
+        The hashtags should be optimized for YouTube and social media visibility.
+
+Content: {content}
+
+Please provide:
+1. A mix of popular and niche hashtags
+2. Relevant trending hashtags
+3. Topic-specific hashtags
+4. Industry-standard hashtags
+5. Engagement-focused hashtags
+
+Format: Return only the hashtags without '#' symbol, separated by commas."""
+
+        # Generate hashtags using Groq
+        response = groq_client.generate_hashtags(prompt)
+        
+        # Process the response to get a clean list of hashtags
+        hashtags = [tag.strip() for tag in response.split(',') if tag.strip()]
+        
+        # Calculate trending score (example implementation)
+        trending_score = min(len(hashtags) * 3, 100)  # Simple scoring based on number of relevant tags
+        
+        return jsonify({
+            'success': True,
+            'hashtags': hashtags,
+            'stats': {
+                'trending_score': trending_score,
+                'relevance': 'High' if trending_score > 80 else 'Medium',
+                'total_tags': len(hashtags)
+            }
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/test')
 def test():
     return jsonify({"return":"working"})
